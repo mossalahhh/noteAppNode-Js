@@ -1,4 +1,5 @@
 import User from "../../../Db/models/user_model.js";
+import bcrypt from "bcryptjs";
 
 export const signUp = async (req, res, next) => {
   const { name, email, password, confirmPassword } = req.body;
@@ -13,7 +14,12 @@ export const signUp = async (req, res, next) => {
         message: "This Email is already exists",
       });
 
-    const user = await User.create({ name, email, password });
+    const hashPassword = bcrypt.hashSync(
+      password,
+      Number(process.env.SALATROUNDS)
+    );
+
+    const user = await User.create({ name, email, password: hashPassword });
     return res.json({
       success: true,
       results: user,
@@ -25,6 +31,11 @@ export const signUp = async (req, res, next) => {
         message: "This Email is already exists",
       });
     }
+    return res.json({
+      success: false,
+      message: "Something went wrong",
+      error: err.message,
+    });
   }
 };
 
@@ -38,12 +49,12 @@ export const logIn = async (req, res, next) => {
         success: false,
         message: "Invalid Email",
       });
-    } else if (user.password !== password) {
-      return res.json({
-        success: false,
-        message: "Invalid password",
-      });
     }
+
+    const matchPassword = await bcrypt.compare(password, user.password);
+    if (!matchPassword)
+      return res.json({ success: false, message: "password must be match" });
+
     return res.json({
       success: true,
       results: user,
@@ -87,7 +98,7 @@ export const updatePassword = async (req, res, next) => {
 
   const user = await User.findOneAndUpdate(
     { email },
-    { $set: {password} },
+    { $set: { password } },
     { new: true }
   );
 

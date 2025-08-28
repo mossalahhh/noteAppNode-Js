@@ -1,8 +1,10 @@
 import express from "express";
+import dotenv from "dotenv";
 import { connectDb } from "./Db/connectionDb.js";
 import { routerApp } from "./src/app_router.js";
+dotenv.config();
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 connectDb();
 routerApp(app, express);
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
