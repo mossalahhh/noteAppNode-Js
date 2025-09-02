@@ -5,12 +5,16 @@ import {
   deleteUser,
   allUsers,
   updatePassword,
+  profile,
 } from "./user_controller.js";
+import { isAuthentication } from "../../middleware/authentication.js";
+import { catchError } from "../../utils/catchError.js";
 const router = Router();
 
-router.post("/signUp", signUp);
-router.post("/logIn", logIn);
-router.delete("/:email", deleteUser);
-router.get("/", allUsers);
-router.patch("/:email", updatePassword);
+router.post("/signUp", catchError(signUp));
+router.post("/logIn", catchError(logIn));
+router.delete("/", isAuthentication, catchError(deleteUser));
+router.get("/", catchError(allUsers));
+router.patch("/:email", catchError(updatePassword));
+router.get("/:profile", isAuthentication, catchError(profile));
 export default router;
